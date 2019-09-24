@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 
 [assembly: InternalsVisibleTo("UnitTests")]
 namespace RSA {
 class Program {
     private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
+    private const char delimeter = ':';
     
     static void Main(string[] args) {
-        const int bytesKeyLength = 8/8;
+        const int bytesKeyLength = 256/8;
         var p = GenerateLargePrimeNumber(bytesKeyLength);
         var q = GenerateLargePrimeNumber(bytesKeyLength);
 
@@ -23,17 +26,51 @@ class Program {
         BigInteger d, tmp;
         var g = Gcd(e, phiN, out d, out tmp);
         d = (d % phiN + phiN) % phiN;
-        Console.WriteLine(d);
-        Console.WriteLine(phiN);
+        Console.WriteLine("Public key: " + n);
+        Console.WriteLine("Public exponent: " + e);
+        Console.WriteLine("Private key: " + d);
         
-        // encrypt
-        var c = 'a';
-        var h = BinPowMod(c, e, n);
-        Console.WriteLine(h);;
+        
+        while (true) {
+            Console.WriteLine("Enter string to encrypt: ");
+            var sourceString = Console.ReadLine();
+            var encryptedString = Encrypt(sourceString, e, n);
+            Console.WriteLine("Encrypted string: " + encryptedString);
 
-        Console.WriteLine((char)BinPowMod(h, d, n));
-        Debug.Assert(c == (char)BinPowMod(h, d, n));
-        rngCsp.Dispose();
+            var decryptedString = Decrypt(encryptedString, d, n);
+            Console.WriteLine("Decrypted string: " + decryptedString);
+
+        }
+//        var c = 'a';
+//        var h = BinPowMod(c, e, n);
+//        Console.WriteLine(h);;
+//
+//        Console.WriteLine((char)BinPowMod(h, d, n));
+////        Debug.Assert(c == (char)BinPowMod(h, d, n));
+//        rngCsp.Dispose();
+    }
+
+    static string Encrypt(string source, BigInteger e, BigInteger n) {
+        var bld = new StringBuilder();
+        
+        for (var i = 0; i < source.Length; i++) {
+            bld.Append(BinPowMod(source[i], e, n).ToString());
+            if (i != source.Length - 1)
+                bld.Append(delimeter);
+        }
+
+        return bld.ToString();
+    }
+
+    static string Decrypt(string source, BigInteger d, BigInteger n) {
+        var bld = new StringBuilder();
+        foreach (var encryptedChar in source.Split(delimeter)) {
+            var decryptedInt = BinPowMod(BigInteger.Parse(encryptedChar), d, n);
+            var decryptedChar = Encoding.UTF8.GetString(decryptedInt.ToByteArray());
+            bld.Append(decryptedChar);
+        }
+
+        return bld.ToString();
     }
 
     public static BigInteger GenerateRandomNumber(int bytesLength) {
@@ -110,7 +147,6 @@ class Program {
                 if (x == nMinusOne)
                     goto outer;
             }
-
             return false;
         }
 
