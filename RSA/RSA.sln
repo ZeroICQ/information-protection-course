@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSA", "RSA.csproj", "{6CB3CEF2-949C-4A4F-8AA1-1D37AF33C6A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSA", "RSA\RSA.csproj", "{EECCAE56-027A-43C6-83D4-0DD7F2B85859}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{BBDFEABD-583F-4FA8-96FC-FB72FBD0E793}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +10,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6CB3CEF2-949C-4A4F-8AA1-1D37AF33C6A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CB3CEF2-949C-4A4F-8AA1-1D37AF33C6A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CB3CEF2-949C-4A4F-8AA1-1D37AF33C6A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CB3CEF2-949C-4A4F-8AA1-1D37AF33C6A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EECCAE56-027A-43C6-83D4-0DD7F2B85859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EECCAE56-027A-43C6-83D4-0DD7F2B85859}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EECCAE56-027A-43C6-83D4-0DD7F2B85859}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EECCAE56-027A-43C6-83D4-0DD7F2B85859}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBDFEABD-583F-4FA8-96FC-FB72FBD0E793}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBDFEABD-583F-4FA8-96FC-FB72FBD0E793}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBDFEABD-583F-4FA8-96FC-FB72FBD0E793}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBDFEABD-583F-4FA8-96FC-FB72FBD0E793}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
