@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using RSA;
 using static RSA.Program;
 
 namespace Tests {
@@ -9,8 +10,8 @@ public class Tests {
     [Test]
     public void TestRndBigIntegerWithLimits() {
         for (var i = 0; i < 1000; i++) {
-            var min = GenerateRandomNumber(i);
-            var max = GenerateRandomNumber(i);
+            var min = Algorithms.GenerateRandomNumber(i);
+            var max = Algorithms.GenerateRandomNumber(i);
 
             if (min > max) {
                 var tmp = min;
@@ -18,7 +19,7 @@ public class Tests {
                 max = tmp;
             }
 
-            var gen = GenerateRandomNumber(min, max);
+            var gen = Algorithms.GenerateRandomNumber(min, max);
             Assert.GreaterOrEqual(gen, min);
             Assert.LessOrEqual(gen, max);
         }
