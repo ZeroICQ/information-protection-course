@@ -32,7 +32,7 @@ class Program {
                     EncryptMenu();
                     break;
                 case 2:
-//                    DecryptMenu();
+                    DecryptMenu();
                     break;
             }
         }
@@ -77,25 +77,32 @@ class Program {
 //        rngCsp.Dispose();
     }
 
+    private static void DecryptMenu() {
+        var encryptedFilePath = ChooseFilePath("encrypted", DefaultEncryptedFileName, true);
+        var privateKeyFilePath = ChooseFilePath("private key", DefaultPrivateKeyFilename, true);
+        var publicKeyFilePath = ChooseFilePath("public key", DefaultPublicKeyFilename, true);
+        Decrypt(encryptedFilePath, privateKeyFilePath, publicKeyFilePath);
+    }
+
     private static void EncryptMenu() {
         var bitsKeyLength = ChooseKeyLength();
         var testPrime = ChoosePrimeTest();
-        var inputFilePath = ChooseInputFilePath();
-        Encrypt(bitsKeyLength, testPrime, inputFilePath);
+        var sourceFilePath = ChooseFilePath("source", DefaultSourceFileName, true);
+        var publicKeyFilePath = ChooseFilePath("public key", DefaultPublicKeyFilename, false);
+        var privateKeyFilePath = ChooseFilePath("private key", DefaultPrivateKeyFilename, false);
+        Encrypt(bitsKeyLength, testPrime, sourceFilePath, sourceFilePath, publicKeyFilePath, privateKeyFilePath);
     }
 
-    private static string ChooseInputFilePath() {
-        const string defaultFileName = "source.txt";
-        
+    private static string ChooseFilePath(string description, string defaultFileName, bool isShouldExist) {
         while (true) {
-            Console.Write("Enter path to file [" + defaultFileName + "]: ");
+            Console.Write("Enter path to " + description + " file [" + defaultFileName + "]: ");
             var input = Console.ReadLine();
             if (input.Length == 0)
                 input = defaultFileName;
             
             var path = Path.GetFullPath(input);
             
-            if (!File.Exists(path)) {
+            if (isShouldExist && !File.Exists(path)) {
                 Console.WriteLine("File " + path  + " doesn't exist.");
                 continue;
             }
@@ -107,14 +114,14 @@ class Program {
     private static TestPrimeDelegate ChoosePrimeTest() {
         while (true) {
             Console.WriteLine("Choose method to test prime number: ");
-            Console.WriteLine("1 - Trial division");
-            Console.WriteLine("2 - Miller-Rabin");
+            Console.WriteLine("1 - Miller-Rabin");
+            Console.WriteLine("2 - Trial division");
             Console.WriteLine("3 - Solovay–Strassen");
             Console.Write("Choose [1]: ");
             
             var input = Console.ReadLine().Trim();
             if (input.Length == 0) {
-                return TestTrialDivision;
+                return TestMillerRabin;
             }
 
             int intInput;
@@ -125,9 +132,9 @@ class Program {
             
             switch (intInput) {
                 case 1:
-                    return TestTrialDivision;
-                case 2:
                     return TestMillerRabin;
+                case 2:
+                    return TestTrialDivision;
                 case 3:
                     return TestSolovayStrassen;
                 default:
@@ -150,7 +157,10 @@ class Program {
                 Console.WriteLine(input + " is not a number.");
                 continue;
             }
-
+            if (intInput < 1) {
+                Console.WriteLine("Key must be a positive integer");
+                continue;
+            }
             if (intInput % 8 != 0) {
                 Console.WriteLine("Key length must be divisible by 8.");
                 continue;
@@ -159,7 +169,5 @@ class Program {
             return intInput;
         }
     }
-
-    
 }
 }

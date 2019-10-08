@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,21 +12,51 @@ public class Algorithms {
     private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
     private const char Delimeter = ':';
     
+    public static readonly string DefaultSourceFileName = "source.txt";
+    public static readonly string DefaultEncryptedFileName = "encrypted.bin";
+    public static readonly string DefaultDecryptedFileName = "decrypted.txt";
+    public static readonly string DefaultPublicKeyFilename = "public.key";
+    public static readonly string DefaultPrivateKeyFilename = "private.key";
+    private static readonly BigInteger PublicExponent = new BigInteger(65537); 
 
-    public static void Encrypt(int bitsKeyLength, TestPrimeDelegate testPrime, string inputFilePath) {
+    public static void Encrypt(int bitsKeyLength, TestPrimeDelegate testPrime, string inputFilePath, 
+                               string sourceFilePath, string publicKeyFilePath, string privateKeyFilePath) 
+    {
         var bytesKeyLength = bitsKeyLength / 8;
         var p = GenerateLargePrimeNumber(bytesKeyLength, testPrime);
         var q = GenerateLargePrimeNumber(bytesKeyLength, testPrime);
 
         var n = p * q;
         var phiN = EulerFunction(p, q);
-        var e = new BigInteger(65537);
-        Debug.Assert(Gcd(e, phiN).IsOne);
-        
-//        // calculate d
+        Debug.Assert(Gcd(PublicExponent, phiN).IsOne);
+        // calculate d
         BigInteger d, tmp;
-        var g = Gcd(e, phiN, out d, out tmp);
+        var g = Gcd(PublicExponent, phiN, out d, out tmp);
         d = (d % phiN + phiN) % phiN;
+        
+        Console.WriteLine("Writing public key to " + publicKeyFilePath);
+        WriteKeyToFile(n, publicKeyFilePath);
+        Console.WriteLine("Writing private key to " + privateKeyFilePath);
+        WriteKeyToFile(d, privateKeyFilePath);
+        
+        Console.WriteLine("Writing encrypted data to " + DefaultEncryptedFileName);
+        using (var reader = File.OpenRead(Path.GetFullPath(DefaultSourceFileName))) {
+            using (var writer = File.CreateText(Path.GetFullPath(DefaultEncryptedFileName))) {
+                int b;
+                var first = true;
+                
+                while ((b = reader.ReadByte()) != -1) {
+                    if (!first) 
+                        writer.Write(Delimeter);
+                    else
+                        first = false;
+                    
+                    var encryptedBytes = BinPowMod(b, PublicExponent, n);
+                    writer.Write(encryptedBytes.ToString());
+                }
+            }
+        }
+        
 //        Console.WriteLine("Public key: " + n);
 //        Console.WriteLine("Public exponent: " + e);
 //        Console.WriteLine("Private key: " + d);
@@ -41,7 +73,30 @@ public class Algorithms {
 //
 //        }
     }
-    
+
+    private static void WriteKeyToFile(BigInteger key, string filePath) {
+        using (var writer = File.Create(filePath)) {
+            writer.Write(key.ToByteArray(true, true));
+        }
+    }
+
+    public static void Decrypt(string encryptedFilePath, string privateKeyFilePath, string publicKeyFilePath) {
+        BigInteger privateKey;
+        BigInteger publicKey;
+        privateKey = new BigInteger(File.ReadAllBytes(privateKeyFilePath), true, true);
+        publicKey = new BigInteger(File.ReadAllBytes(publicKeyFilePath), true, true);
+
+        var encryptedBytes = File.ReadAllText(DefaultEncryptedFileName).Split(Delimeter);
+        using (var writer = File.Create(Path.GetFullPath(DefaultDecryptedFileName))) {
+            foreach (var b in encryptedBytes) {
+                var encryptedBigInt =  BigInteger.Parse(b);
+                var decryptedByte = BinPowMod(encryptedBigInt, privateKey, publicKey);
+                Debug.Assert(decryptedByte.GetByteCount() == 1);
+                writer.WriteByte(decryptedByte.ToByteArray()[0]);
+            }
+        }
+    }
+
 //    public static string Encrypt(string source, BigInteger e, BigInteger n) {
 //        var bld = new StringBuilder();
 //        
