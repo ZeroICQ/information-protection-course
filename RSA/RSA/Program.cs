@@ -36,45 +36,6 @@ class Program {
                     break;
             }
         }
-        
-//        
-//        var p = GenerateLargePrimeNumber(bytesKeyLength);
-//        var q = GenerateLargePrimeNumber(bytesKeyLength);
-//
-//        var n = p * q;
-//        var phiN = EulerFunction(p, q);
-//        var e = new BigInteger(65537);
-//        Debug.Assert(Gcd(e, phiN).IsOne);
-//        
-//        // count d
-//        BigInteger d, tmp;
-//        var g = Gcd(e, phiN, out d, out tmp);
-//        d = (d % phiN + phiN) % phiN;
-//        Console.WriteLine("Public key: " + n);
-//        Console.WriteLine("Public exponent: " + e);
-//        Console.WriteLine("Private key: " + d);
-//        
-//        
-//        while (true) {
-//            Console.WriteLine("Enter string to encrypt: ");
-//            var sourceString = Console.ReadLine();
-//            var encryptedString = Encrypt(sourceString, e, n);
-//            Console.WriteLine("Encrypted string: " + encryptedString);
-//
-//            var decryptedString = Decrypt(encryptedString, d, n);
-//            Console.WriteLine("Decrypted string: " + decryptedString);
-//
-//        }
-        
-        
-//--------------------------------        
-//        var c = 'a';
-//        var h = BinPowMod(c, e, n);
-//        Console.WriteLine(h);;
-//
-//        Console.WriteLine((char)BinPowMod(h, d, n));
-////        Debug.Assert(c == (char)BinPowMod(h, d, n));
-//        rngCsp.Dispose();
     }
 
     private static void DecryptMenu() {

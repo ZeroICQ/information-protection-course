@@ -56,22 +56,6 @@ public class Algorithms {
                 }
             }
         }
-        
-//        Console.WriteLine("Public key: " + n);
-//        Console.WriteLine("Public exponent: " + e);
-//        Console.WriteLine("Private key: " + d);
-//        
-//        
-//        while (true) {
-//            Console.WriteLine("Enter string to encrypt: ");
-//            var sourceString = Console.ReadLine();
-//            var encryptedString = Encrypt(sourceString, e, n);
-//            Console.WriteLine("Encrypted string: " + encryptedString);
-//
-//            var decryptedString = Decrypt(encryptedString, d, n);
-//            Console.WriteLine("Decrypted string: " + decryptedString);
-//
-//        }
     }
 
     private static void WriteKeyToFile(BigInteger key, string filePath) {
@@ -96,29 +80,6 @@ public class Algorithms {
             }
         }
     }
-
-//    public static string Encrypt(string source, BigInteger e, BigInteger n) {
-//        var bld = new StringBuilder();
-//        
-//        for (var i = 0; i < source.Length; i++) {
-//            bld.Append((string) BinPowMod(source[i], e, n).ToString());
-//            if (i != source.Length - 1)
-//                bld.Append((char) Delimeter);
-//        }
-//
-//        return bld.ToString();
-//    }
-
-//    public static string Decrypt(string source, BigInteger d, BigInteger n) {
-//        var bld = new StringBuilder();
-//        foreach (var encryptedChar in source.Split(Delimeter)) {
-//            var decryptedInt = BinPowMod(BigInteger.Parse(encryptedChar), d, n);
-//            var decryptedChar = Encoding.UTF8.GetString((byte[]) decryptedInt.ToByteArray());
-//            bld.Append(decryptedChar);
-//        }
-//
-//        return bld.ToString();
-//    }
 
     public static BigInteger GenerateRandomNumber(int bytesLength) {
         var buff = new byte[bytesLength];
@@ -202,7 +163,38 @@ public class Algorithms {
     }
 
     public static bool TestTrialDivision(BigInteger n) {
-        throw new NotImplementedException();
+        var closestSqrt = Sqrt(n);
+
+        for (BigInteger i = 2; i <= closestSqrt; i++) {
+            if (BigInteger.Remainder(n, i) == 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static BigInteger Sqrt(BigInteger n) {
+        // [left, right]
+        BigInteger left = 2;
+        BigInteger right = n;
+        
+        var middle = (right + left) / 2;
+        var answer = middle * middle;
+        
+        while (right - left != 1) {
+            middle = (right + left) / 2;
+            if (middle * middle >= n) {
+                answer = middle;
+                right = middle;
+                continue;
+            }
+
+            left = middle;
+
+        }
+
+        return answer;
     }
 
     public static bool TestSolovayStrassen(BigInteger n) {
