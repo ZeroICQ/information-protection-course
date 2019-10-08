@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Numerics;
+using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -162,6 +163,56 @@ public class Algorithms {
         return true;
     }
 
+    public static bool TestSolovayStrassen(BigInteger n) {
+        const int rounds = 28;
+        for (var i = 0; i < rounds; i++) {
+            var a = GenerateRandomNumber(3, n - 1);
+            if (BigInteger.GreatestCommonDivisor(a, n) > 1)
+                return false;
+
+            if (BigInteger.Remainder(BigInteger.ModPow(a, (n - 1) / 2, n) - JacobySymbol(a, n), n) != 0)
+                return false;
+            
+        }
+        return true;
+    }
+
+    public static BigInteger JacobySymbol(BigInteger a, BigInteger b) {
+        if (BigInteger.GreatestCommonDivisor(a, b) != 1)
+            return 0;
+        
+        BigInteger r = 1;
+        if (a < 0) {
+            a = -a;
+            if (BigInteger.Remainder(b, 4) == 3)
+                r = -r;
+        }
+        step4:
+        BigInteger t = 0;
+        while (a.IsEven) {
+            t++;
+            a = a / 2;
+        }
+        
+        if (!t.IsEven)
+            if (BigInteger.Remainder(b, 8) == 3 || BigInteger.Remainder(b, 8) == 5)
+                r = -r;
+
+        if (BigInteger.Remainder(a, 4) == 3 && BigInteger.Remainder(b, 4) == 3) {
+            r = -r;
+        }
+        
+        var c = a;
+        a = BigInteger.Remainder(b, c);
+        b = c;
+        
+        if (!a.IsZero)
+            goto step4;
+        
+        return r;
+
+    }
+
     public static bool TestTrialDivision(BigInteger n) {
         var closestSqrt = Sqrt(n);
 
@@ -195,10 +246,6 @@ public class Algorithms {
         }
 
         return answer;
-    }
-
-    public static bool TestSolovayStrassen(BigInteger n) {
-        throw new NotImplementedException();
     }
 
     private static BigInteger BinPowMod(BigInteger a, BigInteger power, BigInteger modulo) {
