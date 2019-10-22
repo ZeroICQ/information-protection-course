@@ -41,5 +41,16 @@ namespace Common {
             handler.Receive(bytes);
             return new BigInteger(bytes, true, true);
         }
+
+        public static void SendLong(Socket handler, long n) {
+            var b = BitConverter.GetBytes(n);
+            handler.Send(b);
+        }
+        
+        public static long ReceiveLong(Socket handler) {
+            var b = new byte[sizeof(long)];
+            handler.Receive(b);
+            return BitConverter.ToInt64(b);
+        }
     }
 }

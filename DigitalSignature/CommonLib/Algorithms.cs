@@ -9,6 +9,10 @@ public class Algorithms {
     public delegate bool TestPrimeDelegate(BigInteger n);
     private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
 
+    public static readonly string EncryptedFilePath = Path.GetFullPath("encrypted");
+    // in bytes
+    private const int DefaultKeySize = 256 / 8;
+
 //    public static void Encrypt(int bitsKeyLength, TestPrimeDelegate testPrime, string inputFilePath, 
 //                               string sourceFilePath, string publicKeyFilePath, string privateKeyFilePath) 
 //    {
@@ -64,8 +68,8 @@ public class Algorithms {
 //            }
 //        }
 //    }
-
-    public static BigInteger GenerateRandomNumber(int bytesLength) {
+    
+    public static BigInteger GenerateRandomNumber(int bytesLength = DefaultKeySize) {
         var buff = new byte[bytesLength];
         rngCsp.GetBytes(buff);
         return new BigInteger(buff, true);
@@ -101,7 +105,7 @@ public class Algorithms {
     }
 
     public static BigInteger GenerateLargePrimeNumber() {
-        return GenerateLargePrimeNumber(64, TestMillerRabin);
+        return GenerateLargePrimeNumber(DefaultKeySize, TestMillerRabin);
     }
 
     public static BigInteger GenerateLargePrimeNumber(int bytesLength, TestPrimeDelegate testPrime) {
@@ -290,5 +294,16 @@ public class Algorithms {
 
         return new BigInteger(resByteArray, true, true);
     }
+
+    public static byte[] GetSecretKeyBytes(BigInteger n) {
+        var sourceBytes = n.ToByteArray();
+        var newBuf = new byte[DefaultKeySize ];
+        
+        var lengthDiff = newBuf.Length - sourceBytes.Length;
+        Array.Copy(sourceBytes, 0, newBuf, lengthDiff, sourceBytes.Length);
+        return newBuf;
+    }
+    
+    
 }    
 }
