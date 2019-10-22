@@ -6,6 +6,7 @@ using Common;
 using static Common.CommonNetwork;
 
 namespace Slave_ {
+    // slave gets document and signature from master, checks and decrypt.
     class Slave {
         static void Main(string[] args) {
             var remoteEndpoint = GetIPEndpoint();
@@ -14,8 +15,6 @@ namespace Slave_ {
             // Connect to a remote device.  
             try {  
                 // Establish the remote endpoint for the socket.  
-                // This example uses port 11000 on the local computer.  
-                // Create a TCP/IP  socket.  
                 Socket sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  
   
                 // Connect the socket to the remote endpoint. Catch any errors.  

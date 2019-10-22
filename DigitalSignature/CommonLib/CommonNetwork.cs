@@ -7,7 +7,7 @@ namespace Common {
         public static readonly string HostAddress = "127.0.0.1";
         public static readonly int HostPort = 1337;
         
-        static public IPEndPoint GetIPEndpoint() {
+        public static IPEndPoint GetIPEndpoint() {
             var host = Dns.GetHostEntry(CommonNetwork.HostAddress);
             foreach (var ip in host.AddressList) {
                 if (ip.AddressFamily == AddressFamily.InterNetwork) {
@@ -16,6 +16,10 @@ namespace Common {
             }
 
             throw new CannotFindLocalIPException();
+        }
+
+        public static Socket GetSocket() {
+            return new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         }
     }
 }

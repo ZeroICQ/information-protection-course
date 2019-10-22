@@ -5,11 +5,18 @@ using System.Text;
 using Common;
 using static Common.CommonNetwork;
 
+// master sends encrypted document and signature.
 namespace DigitalSignature {
     class Master {
         static void Main(string[] args) {
+            var filePath = GetFilePath(args);
+            if (filePath is null)
+                return;
+            Console.WriteLine(filePath);
+            return;
+            //----------------------------------
             var localEndpoint = GetIPEndpoint();
-            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var listener = GetSocket();
             byte[] bytes = new Byte[1024];
             string data = null;
             try {
@@ -46,5 +53,15 @@ namespace DigitalSignature {
                 Console.WriteLine(e);
             }
         }
+        
+        // get file path from args
+        private static string GetFilePath(string[] args) {
+            if (args.Length != 0 && args[0].Length != 0) return args[0];
+            Console.WriteLine("USAGE: ");
+            Console.WriteLine("master [filepath]");
+            return null;
+
+        }
+        
     }
 }
