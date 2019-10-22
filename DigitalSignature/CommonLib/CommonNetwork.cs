@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 
 namespace Common {
     public class CommonNetwork {
-        public static readonly string HostAddress = "127.0.0.1";
-        public static readonly int HostPort = 1337;
-        
-        public static IPEndPoint GetIPEndpoint() {
+        private const string HostAddress = "127.0.0.1";
+        private const int HostPort = 1337;
+
+        public static IPEndPoint GetIpEndpoint() {
             var host = Dns.GetHostEntry(CommonNetwork.HostAddress);
             foreach (var ip in host.AddressList) {
                 if (ip.AddressFamily == AddressFamily.InterNetwork) {
@@ -20,6 +21,25 @@ namespace Common {
 
         public static Socket GetSocket() {
             return new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        }
+
+        public static void SendBigInteger(Socket handler, BigInteger n) {
+            var bytes = n.ToByteArray(true, true);
+            var lengthBytes = BitConverter.GetBytes(bytes.LongLength);
+
+            handler.Send(lengthBytes);
+            handler.Send(bytes);
+        }
+
+        public static BigInteger ReceiveBigInteger(Socket handler) {
+            var lengthBytes = new byte[sizeof(long)];
+
+            handler.Receive(lengthBytes);
+            var length = BitConverter.ToInt64(lengthBytes);
+
+            var bytes = new byte[length];
+            handler.Receive(bytes);
+            return new BigInteger(bytes, true, true);
         }
     }
 }

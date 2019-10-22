@@ -4,12 +4,13 @@ using System.Net.Sockets;
 using System.Text;
 using Common;
 using static Common.CommonNetwork;
+using static Common.Algorithms;
 
 // client gets document and signature from master, checks and decrypts.
 namespace Client {
     class Client {
         static void Main(string[] args) {
-            var remoteEndpoint = GetIPEndpoint();
+            var remoteEndpoint = GetIpEndpoint();
             byte[] bytes = new byte[1024];  
   
             // Connect to a remote device.  
@@ -22,7 +23,17 @@ namespace Client {
                     sender.Connect(remoteEndpoint);  
   
                     Console.WriteLine("Socket connected to {0}",  
-                        sender.RemoteEndPoint.ToString());  
+                        sender.RemoteEndPoint.ToString());
+
+                    var p = ReceiveBigInteger(sender);
+                    var g = ReceiveBigInteger(sender);
+                    
+                    Console.WriteLine("p is");
+                    Console.WriteLine(p.ToString());
+                    
+                    Console.WriteLine("g is");
+                    Console.WriteLine(g.ToString());
+                    return;
   
                     // Encode the data string into a byte array.  
                     byte[] msg = Encoding.ASCII.GetBytes("This is a test<EOF>");  
