@@ -52,5 +52,17 @@ namespace Common {
             handler.Receive(b);
             return BitConverter.ToInt64(b);
         }
+
+        public static void SendBytes(Socket handler, byte[] bytes) {
+            SendLong(handler, bytes.LongLength);
+            handler.Send(bytes);
+        }
+        
+        public static byte[] ReceiveBytes(Socket handler) {
+            var length = ReceiveLong(handler);
+            var bytes = new byte[length];
+            handler.Receive(bytes);
+            return bytes;
+        }
     }
 }

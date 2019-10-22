@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 using Common;
 using static Common.CommonNetwork;
@@ -49,7 +50,8 @@ namespace Client {
                     Console.WriteLine("Common secret key:");
                     Console.WriteLine(commonSecretKey.ToString());
                     
-                    ReceiveAndDecryptFile(handler);
+                    var secretKeyBytes = GetSecretKeyBytes(commonSecretKey);
+                    ReceiveAndDecryptFile(handler, secretKeyBytes);
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
                     return;
@@ -82,7 +84,9 @@ namespace Client {
             }  
         }
 
-        private static void ReceiveAndDecryptFile(Socket handler) {
+        private static void ReceiveAndDecryptFile(Socket handler, byte[] secretKey) {
+            var IV = ReceiveBytes(handler);
+            
             var fileLength = ReceiveLong(handler);
             var receivedBytes = 0;
             using (var writer = File.OpenWrite(EncryptedFilePath)) {
@@ -95,7 +99,35 @@ namespace Client {
                 
             }
             
+            Decrypt(secretKey, IV);
             
+        }
+
+        private static void Decrypt(byte[] secretKey, byte[] IV) {
+            using (var aesAlg = Aes.Create()) {
+                aesAlg.Key = secretKey;
+                aesAlg.IV = IV;
+
+                // Create a decryptor to perform the stream transform.
+                var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                // Create the streams used for decryption.
+                using (var writer = File.OpenWrite("decrypted")) {
+                    using (var msDecrypt = new FileStream(EncryptedFilePath, FileMode.Open)) {
+                        using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read)) {
+                            // Read the decrypted bytes from the decrypting stream
+                            // and place them in a string.
+                            int b;
+                            
+                            while ((b = csDecrypt.ReadByte()) != -1) {
+                                var realB = new byte[1];
+                                realB[0] = BitConverter.GetBytes(b)[0];
+                                writer.Write(realB);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
