@@ -5,9 +5,9 @@ using System.Text;
 using Common;
 using static Common.CommonNetwork;
 
-namespace Slave_ {
-    // slave gets document and signature from master, checks and decrypt.
-    class Slave {
+// client gets document and signature from master, checks and decrypts.
+namespace Client {
+    class Client {
         static void Main(string[] args) {
             var remoteEndpoint = GetIPEndpoint();
             byte[] bytes = new byte[1024];  

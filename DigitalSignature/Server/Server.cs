@@ -5,9 +5,9 @@ using System.Text;
 using Common;
 using static Common.CommonNetwork;
 
-// master sends encrypted document and signature.
+// server sends encrypted document and signature.
 namespace DigitalSignature {
-    class Master {
+    class Server {
         static void Main(string[] args) {
             var filePath = GetFilePath(args);
             if (filePath is null)
