@@ -59,6 +59,7 @@ namespace DigitalSignature {
                 Console.WriteLine(commonSecretKey.ToString());
                 var secretKeyBytes = GetSecretKeyBytes(commonSecretKey); 
                 EncryptAndSendFile(handler, filePath, secretKeyBytes);
+                CalculateAndSendSignature(handler);
                 
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
@@ -102,10 +103,38 @@ namespace DigitalSignature {
                     SendBytes(handler, aesAlg.IV);
                 }
             }
-            var encryptedFilelength = new FileInfo(EncryptedFilePath).Length;
-            SendLong(handler, encryptedFilelength);
+            var encryptedFileLength = new FileInfo(EncryptedFilePath).Length;
+            SendLong(handler, encryptedFileLength);
             handler.SendFile(EncryptedFilePath);
 //            File.Delete(EncryptedFilePath);
+        }
+
+        private static void CalculateAndSendSignature(Socket handler) {
+            var hash = CalculateHash();
+            //generate G and P
+            var g = GenerateLargePrimeNumber();
+            var p = GenerateLargePrimeNumber();
+            // must be < p
+            if (g > p) {
+                var tmp = g;
+                g = p;
+                p = tmp;
+            }
+            // (1, (P-1))
+            var x = GenerateRandomNumber(2, )
+                
+            
+            //y
+            var openKey = BigInteger.ModPow(g, BigInteger.Max)
+
+        }
+
+        private static byte[] CalculateHash() {
+            using (SHA256 mySHA256 = SHA256.Create()) {
+                using (var stream = File.OpenRead(EncryptedFilePath)) {
+                    return mySHA256.ComputeHash(stream);
+                }
+            }
         }
         
     }

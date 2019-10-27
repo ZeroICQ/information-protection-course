@@ -107,6 +107,10 @@ public class Algorithms {
     public static BigInteger GenerateLargePrimeNumber() {
         return GenerateLargePrimeNumber(DefaultKeySize, TestMillerRabin);
     }
+    
+    public static BigInteger GenerateLargePrimeNumber(int minVal) {
+        return GenerateLargePrimeNumber(DefaultKeySize, TestMillerRabin);
+    }
 
     public static BigInteger GenerateLargePrimeNumber(int bytesLength, TestPrimeDelegate testPrime) {
         while (true) {
@@ -256,6 +260,46 @@ public class Algorithms {
     
     // [min, max]
     public static BigInteger GenerateRandomNumber(BigInteger min, BigInteger max) {
+        var maxByteArray = max.ToByteArray(true, true);
+        var minByteArray = min.ToByteArray(true, true);
+        Debug.Assert(maxByteArray.Length >= minByteArray.Length);
+        
+        var resByteArray = new byte[maxByteArray.Length];
+
+        if (minByteArray.Length < maxByteArray.Length) {
+            //increase length
+            var newBuf = new byte[maxByteArray.Length];
+            var lengthDiff = maxByteArray.Length - minByteArray.Length;
+            Array.Copy(minByteArray, 0, newBuf, lengthDiff, minByteArray.Length);
+            minByteArray = newBuf;
+        }
+
+        var isLessMax = false;
+        var isMoreMin = false;
+        var rnd = new Random();
+        
+        for (var i = 0; i < maxByteArray.Length; i++) {
+            var upperBound = Byte.MaxValue + 1;
+            if (!isLessMax)
+                upperBound = maxByteArray[i] + 1;
+
+            var lowerBound = Byte.MinValue;
+            if (!isMoreMin)
+                lowerBound = minByteArray[i];
+            
+            var rndByte = (byte)rnd.Next(lowerBound, upperBound);
+            if (rndByte < maxByteArray[i])
+                isLessMax = true;
+            
+            if (rndByte > minByteArray[i])
+                isMoreMin = true;
+            resByteArray[i] = rndByte;
+        }
+
+        return new BigInteger(resByteArray, true, true);
+    }
+    
+    public static BigInteger GenerateRandomNumber(BigInteger min, int bytesLength = DefaultKeySize) {
         var maxByteArray = max.ToByteArray(true, true);
         var minByteArray = min.ToByteArray(true, true);
         Debug.Assert(maxByteArray.Length >= minByteArray.Length);

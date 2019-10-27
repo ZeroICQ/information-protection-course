@@ -6,7 +6,7 @@ using System.Numerics;
 namespace Common {
     public class CommonNetwork {
         private const string HostAddress = "127.0.0.1";
-        private const int HostPort = 1337;
+        private const int HostPort = 13370;
 
         public static IPEndPoint GetIpEndpoint() {
             var host = Dns.GetHostEntry(CommonNetwork.HostAddress);
