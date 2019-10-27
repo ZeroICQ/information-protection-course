@@ -68,18 +68,12 @@ public class Algorithms {
 //            }
 //        }
 //    }
-    
-    public static BigInteger GenerateRandomNumber(int bytesLength = DefaultKeySize) {
-        var buff = new byte[bytesLength];
-        rngCsp.GetBytes(buff);
-        return new BigInteger(buff, true);
-    }
-    
+
     public static BigInteger EulerFunction(BigInteger p, BigInteger q) {
         return (p - 1) * (q - 1);
     }
 
-    private static BigInteger Gcd(BigInteger a, BigInteger b) {
+    public static BigInteger Gcd(BigInteger a, BigInteger b) {
         while (!b.IsZero) {
             a %= b;
             var tmp = a;
@@ -90,7 +84,7 @@ public class Algorithms {
         return a;
     }
 
-    private static BigInteger Gcd(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y) {
+    public static BigInteger Gcd(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y) {
         if (a.IsZero) {
             x = 0;
             y = 1;
@@ -108,8 +102,17 @@ public class Algorithms {
         return GenerateLargePrimeNumber(DefaultKeySize, TestMillerRabin);
     }
     
-    public static BigInteger GenerateLargePrimeNumber(int minVal) {
-        return GenerateLargePrimeNumber(DefaultKeySize, TestMillerRabin);
+    public static BigInteger GenerateLargePrimeNumber(BigInteger minVal) {
+        while (true) {
+            var candidate = GenerateRandomNumber(DefaultKeySize, minVal);
+            while (candidate <= 2)
+                candidate = GenerateRandomNumber(DefaultKeySize, minVal);
+            // make odd
+            candidate |= 1;
+
+            if (TestMillerRabin(candidate))
+                return candidate;
+        }
     }
 
     public static BigInteger GenerateLargePrimeNumber(int bytesLength, TestPrimeDelegate testPrime) {
@@ -258,6 +261,12 @@ public class Algorithms {
         return res;
     }
     
+    public static BigInteger GenerateRandomNumber(int bytesLength = DefaultKeySize) {
+        var buff = new byte[bytesLength];
+        rngCsp.GetBytes(buff);
+        return new BigInteger(buff, true);
+    }
+    
     // [min, max]
     public static BigInteger GenerateRandomNumber(BigInteger min, BigInteger max) {
         var maxByteArray = max.ToByteArray(true, true);
@@ -299,38 +308,31 @@ public class Algorithms {
         return new BigInteger(resByteArray, true, true);
     }
     
-    public static BigInteger GenerateRandomNumber(BigInteger min, int bytesLength = DefaultKeySize) {
-        var maxByteArray = max.ToByteArray(true, true);
+    // [min, max]
+    public static BigInteger GenerateRandomNumber(int bytesLength, BigInteger min) {
         var minByteArray = min.ToByteArray(true, true);
-        Debug.Assert(maxByteArray.Length >= minByteArray.Length);
-        
-        var resByteArray = new byte[maxByteArray.Length];
+        var resByteArray = new byte[bytesLength];
 
-        if (minByteArray.Length < maxByteArray.Length) {
+        if (minByteArray.Length < bytesLength) {
             //increase length
-            var newBuf = new byte[maxByteArray.Length];
-            var lengthDiff = maxByteArray.Length - minByteArray.Length;
+            var newBuf = new byte[bytesLength];
+            var lengthDiff = bytesLength - minByteArray.Length;
             Array.Copy(minByteArray, 0, newBuf, lengthDiff, minByteArray.Length);
             minByteArray = newBuf;
         }
 
-        var isLessMax = false;
         var isMoreMin = false;
         var rnd = new Random();
         
-        for (var i = 0; i < maxByteArray.Length; i++) {
+        for (var i = 0; i < bytesLength; i++) {
             var upperBound = Byte.MaxValue + 1;
-            if (!isLessMax)
-                upperBound = maxByteArray[i] + 1;
-
+            
             var lowerBound = Byte.MinValue;
             if (!isMoreMin)
                 lowerBound = minByteArray[i];
             
             var rndByte = (byte)rnd.Next(lowerBound, upperBound);
-            if (rndByte < maxByteArray[i])
-                isLessMax = true;
-            
+
             if (rndByte > minByteArray[i])
                 isMoreMin = true;
             resByteArray[i] = rndByte;
@@ -338,14 +340,23 @@ public class Algorithms {
 
         return new BigInteger(resByteArray, true, true);
     }
-
-    public static byte[] GetSecretKeyBytes(BigInteger n) {
+    
+    public static byte[] GetKeyBytes(BigInteger n) {
         var sourceBytes = n.ToByteArray();
-        var newBuf = new byte[DefaultKeySize ];
+        var newBuf = new byte[DefaultKeySize];
         
         var lengthDiff = newBuf.Length - sourceBytes.Length;
         Array.Copy(sourceBytes, 0, newBuf, lengthDiff, sourceBytes.Length);
         return newBuf;
+    }
+    
+    // length is 160 bits, 20 bytes
+    public static BigInteger CalculateHash() {
+        using (var mySHA1 = SHA1.Create()) {
+            using (var stream = File.OpenRead(EncryptedFilePath)) {
+                return new BigInteger(mySHA1.ComputeHash(stream), true);
+            }
+        }
     }
     
     

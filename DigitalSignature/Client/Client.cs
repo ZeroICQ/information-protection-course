@@ -50,26 +50,12 @@ namespace Client {
                     Console.WriteLine("Common secret key:");
                     Console.WriteLine(commonSecretKey.ToString());
                     
-                    var secretKeyBytes = GetSecretKeyBytes(commonSecretKey);
+                    var secretKeyBytes = GetKeyBytes(commonSecretKey);
                     ReceiveAndDecryptFile(handler, secretKeyBytes);
+                    var isVerified = GetAndVerifySignature(handler);
+                    Console.WriteLine("File is verified: " + isVerified);
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
-                    return;
-                    
-                    // Encode the data string into a byte array.  
-                    byte[] msg = Encoding.ASCII.GetBytes("This is a test<EOF>");  
-  
-                    // Send the data through the socket.  
-                    int bytesSent = handler.Send(msg);  
-  
-                    // Receive the response from the remote device.  
-                    int bytesRec = handler.Receive(bytes);  
-                    Console.WriteLine("Echoed test = {0}",  
-                        Encoding.ASCII.GetString(bytes,0,bytesRec));  
-  
-                    // Release the socket.  
-                    handler.Shutdown(SocketShutdown.Both);  
-                    handler.Close();  
   
                 } catch (ArgumentNullException ane) {  
                     Console.WriteLine("ArgumentNullException : {0}",ane.ToString());  
@@ -82,6 +68,18 @@ namespace Client {
             } catch (Exception e) {  
                 Console.WriteLine( e.ToString());  
             }  
+        }
+
+        private static bool GetAndVerifySignature(Socket handler) {
+            var hash = CalculateHash();
+            var g = ReceiveBigInteger(handler);
+            var openKey = ReceiveBigInteger(handler);
+            var p = ReceiveBigInteger(handler);
+            var a = ReceiveBigInteger(handler);
+            var b = ReceiveBigInteger(handler);
+
+            var A = (BigInteger.ModPow(openKey, a, p) * BigInteger.ModPow(a, b, p)) % p;
+            return A == BigInteger.ModPow(g, hash, p);
         }
 
         private static void ReceiveAndDecryptFile(Socket handler, byte[] secretKey) {

@@ -57,7 +57,7 @@ namespace DigitalSignature {
                 Console.WriteLine(mySecretKey.ToString());
                 Console.WriteLine("Common secret key:");
                 Console.WriteLine(commonSecretKey.ToString());
-                var secretKeyBytes = GetSecretKeyBytes(commonSecretKey); 
+                var secretKeyBytes = GetKeyBytes(commonSecretKey); 
                 EncryptAndSendFile(handler, filePath, secretKeyBytes);
                 CalculateAndSendSignature(handler);
                 
@@ -108,34 +108,46 @@ namespace DigitalSignature {
             handler.SendFile(EncryptedFilePath);
 //            File.Delete(EncryptedFilePath);
         }
-
+        
+        // http://crypto-r.narod.ru/glava6/glava6_3.html
         private static void CalculateAndSendSignature(Socket handler) {
             var hash = CalculateHash();
-            //generate G and P
-            var g = GenerateLargePrimeNumber();
-            var p = GenerateLargePrimeNumber();
-            // must be < p
-            if (g > p) {
-                var tmp = g;
-                g = p;
-                p = tmp;
-            }
-            // (1, (P-1))
-            var x = GenerateRandomNumber(2, )
-                
             
+            //generate G and P
+            // 1< m<p-1 
+            var p = GenerateLargePrimeNumber(BigInteger.Pow(2, 160));
+            var g = GenerateRandomNumber(BigInteger.One, p-1);
+            
+            // (1, (P-1)). x - secret key 
+            var x = GenerateRandomNumber(new BigInteger(2), p - 2);
             //y
-            var openKey = BigInteger.ModPow(g, BigInteger.Max)
-
-        }
-
-        private static byte[] CalculateHash() {
-            using (SHA256 mySHA256 = SHA256.Create()) {
-                using (var stream = File.OpenRead(EncryptedFilePath)) {
-                    return mySHA256.ComputeHash(stream);
-                }
+            var openKey = BigInteger.ModPow(g, x, p);
+            
+            Console.WriteLine("Generating coprime K");
+            BigInteger k;
+            while (true) {
+                var kCandidate = GenerateRandomNumber(new BigInteger(2), p - 2);
+                if (Gcd(kCandidate, p - 1) != 1) continue;
+                k = kCandidate;
+                break;
             }
+
+            var a = BigInteger.ModPow(g, k, p);
+            
+            // calc k_inverse
+            BigInteger kInverse, tmp;
+            Gcd(k, p - 1, out kInverse, out tmp);
+            var b = (((hash - x * a) * kInverse % (p-1)) + (p-1)) % (p-1);
+            Console.WriteLine("b is: " + b);
+            
+            //S=(a, b) - signature
+            SendBigInteger(handler, g);
+            SendBigInteger(handler, openKey);
+            SendBigInteger(handler, p);
+            SendBigInteger(handler, a);
+            SendBigInteger(handler, b);
+            
+
         }
-        
     }
 }
