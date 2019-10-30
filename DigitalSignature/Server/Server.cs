@@ -20,7 +20,7 @@ namespace DigitalSignature {
             
             var localEndpoint = GetIpEndpoint();
             var listener = GetSocket();
-            try {
+//            try {
                 listener.Bind(localEndpoint);
                 listener.Listen(1);
                 
@@ -64,10 +64,10 @@ namespace DigitalSignature {
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
 
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-            }
+//            }
+//            catch (Exception e) {
+//                Console.WriteLine(e);
+//            }
         }
         
         // get file path from args
@@ -85,6 +85,7 @@ namespace DigitalSignature {
                     Console.WriteLine("Key size is " + secretKey.LongLength);
                     
                     aesAlg.Key = secretKey;
+                    aesAlg.Padding = PaddingMode.Zeros;
                     
                     var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                     // Create the streams used for encryption.

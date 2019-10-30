@@ -17,12 +17,12 @@ namespace Client {
             byte[] bytes = new byte[1024];  
   
             // Connect to a remote device.  
-            try {  
+//            try {  
                 // Establish the remote endpoint for the socket.  
                 Socket handler = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  
   
                 // Connect the socket to the remote endpoint. Catch any errors.  
-                try {  
+//                try {  
                     handler.Connect(remoteEndpoint);  
   
                     Console.WriteLine("Socket connected to {0}",  
@@ -57,17 +57,19 @@ namespace Client {
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
   
-                } catch (ArgumentNullException ane) {  
-                    Console.WriteLine("ArgumentNullException : {0}",ane.ToString());  
-                } catch (SocketException se) {  
-                    Console.WriteLine("SocketException : {0}",se.ToString());  
-                } catch (Exception e) {  
-                    Console.WriteLine("Unexpected exception : {0}", e.ToString());  
-                }  
+//                } catch (ArgumentNullException ane) {  
+//                    Console.WriteLine("ArgumentNullException : {0}",ane.ToString());  
+//                } catch (SocketException se) {  
+//                    Console.WriteLine("SocketException : {0}",se.ToString());  
+//                } catch (Exception e) {  
+//                    Console.WriteLine("Unexpected exception : {0}", e.ToString());
+//                    throw e;
+//                }  
   
-            } catch (Exception e) {  
-                Console.WriteLine( e.ToString());  
-            }  
+//            } catch (Exception e) {  
+//                Console.WriteLine( e.ToString());
+//                throw e;
+//            }  
         }
 
         private static bool GetAndVerifySignature(Socket handler) {
@@ -105,10 +107,10 @@ namespace Client {
             using (var aesAlg = Aes.Create()) {
                 aesAlg.Key = secretKey;
                 aesAlg.IV = IV;
-
+                aesAlg.Padding = PaddingMode.Zeros;
+                
                 // Create a decryptor to perform the stream transform.
                 var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
                 // Create the streams used for decryption.
                 using (var writer = File.OpenWrite("decrypted")) {
                     using (var msDecrypt = new FileStream(EncryptedFilePath, FileMode.Open)) {
@@ -120,7 +122,8 @@ namespace Client {
                             while ((b = csDecrypt.ReadByte()) != -1) {
                                 var realB = new byte[1];
                                 realB[0] = BitConverter.GetBytes(b)[0];
-                                writer.Write(realB);
+//                                writer.WriteByte(realB[0]);
+                                writer.WriteB(realB);
                             }
                         }
                     }
