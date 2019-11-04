@@ -17,59 +17,41 @@ namespace Client {
             byte[] bytes = new byte[1024];  
   
             // Connect to a remote device.  
-//            try {  
-                // Establish the remote endpoint for the socket.  
-                Socket handler = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  
-  
-                // Connect the socket to the remote endpoint. Catch any errors.  
-//                try {  
-                    handler.Connect(remoteEndpoint);  
-  
-                    Console.WriteLine("Socket connected to {0}",  
-                        handler.RemoteEndPoint.ToString());
+            Socket handler = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  
+        
+            handler.Connect(remoteEndpoint);  
 
-                    var p = ReceiveBigInteger(handler);
-                    var g = ReceiveBigInteger(handler);
-                    
-                    Console.WriteLine("p is");
-                    Console.WriteLine(p.ToString());
-                    
-                    Console.WriteLine("g is");
-                    Console.WriteLine(g.ToString());
-                    
-                    var mySecretKey = GenerateRandomNumber();
-                    var myOpenKey = BigInteger.ModPow(g, mySecretKey, p);
-                    var otherOpenKey = ReceiveBigInteger(handler);
-                    SendBigInteger(handler, myOpenKey);
-                    var commonSecretKey = BigInteger.ModPow(otherOpenKey, mySecretKey, p);
+            Console.WriteLine("Socket connected to {0}",  
+                handler.RemoteEndPoint.ToString());
 
-                    Console.WriteLine("My open key:");
-                    Console.WriteLine(myOpenKey.ToString());
-                    Console.WriteLine("My secret key:");
-                    Console.WriteLine(mySecretKey.ToString());
-                    Console.WriteLine("Common secret key:");
-                    Console.WriteLine(commonSecretKey.ToString());
-                    
-                    var secretKeyBytes = GetKeyBytes(commonSecretKey);
-                    ReceiveAndDecryptFile(handler, secretKeyBytes);
-                    var isVerified = GetAndVerifySignature(handler);
-                    Console.WriteLine("File is verified: " + isVerified);
-                    handler.Shutdown(SocketShutdown.Both);
-                    handler.Close();
-  
-//                } catch (ArgumentNullException ane) {  
-//                    Console.WriteLine("ArgumentNullException : {0}",ane.ToString());  
-//                } catch (SocketException se) {  
-//                    Console.WriteLine("SocketException : {0}",se.ToString());  
-//                } catch (Exception e) {  
-//                    Console.WriteLine("Unexpected exception : {0}", e.ToString());
-//                    throw e;
-//                }  
-  
-//            } catch (Exception e) {  
-//                Console.WriteLine( e.ToString());
-//                throw e;
-//            }  
+            var p = ReceiveBigInteger(handler);
+            var g = ReceiveBigInteger(handler);
+            
+            Console.WriteLine("p is");
+            Console.WriteLine(p.ToString());
+            
+            Console.WriteLine("g is");
+            Console.WriteLine(g.ToString());
+            
+            var mySecretKey = GenerateRandomNumber();
+            var myOpenKey = BigInteger.ModPow(g, mySecretKey, p);
+            var otherOpenKey = ReceiveBigInteger(handler);
+            SendBigInteger(handler, myOpenKey);
+            var commonSecretKey = BigInteger.ModPow(otherOpenKey, mySecretKey, p);
+
+            Console.WriteLine("My open key:");
+            Console.WriteLine(myOpenKey.ToString());
+            Console.WriteLine("My secret key:");
+            Console.WriteLine(mySecretKey.ToString());
+            Console.WriteLine("Common secret key:");
+            Console.WriteLine(commonSecretKey.ToString());
+            
+            var secretKeyBytes = GetKeyBytes(commonSecretKey);
+            ReceiveAndDecryptFile(handler, secretKeyBytes);
+            var isVerified = GetAndVerifySignature(handler);
+            Console.WriteLine("File is verified: " + isVerified);
+            handler.Shutdown(SocketShutdown.Both);
+            handler.Close();
         }
 
         private static bool GetAndVerifySignature(Socket handler) {
@@ -123,7 +105,7 @@ namespace Client {
                                 var realB = new byte[1];
                                 realB[0] = BitConverter.GetBytes(b)[0];
 //                                writer.WriteByte(realB[0]);
-                                writer.WriteB(realB);
+                                writer.WriteByte(realB[0]);
                             }
                         }
                     }

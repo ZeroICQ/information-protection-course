@@ -20,54 +20,48 @@ namespace DigitalSignature {
             
             var localEndpoint = GetIpEndpoint();
             var listener = GetSocket();
-//            try {
-                listener.Bind(localEndpoint);
-                listener.Listen(1);
+            listener.Bind(localEndpoint);
+            listener.Listen(1);
+            
+            Console.WriteLine("Waiting for a connection...");
+            var handler = listener.Accept();
+            Console.WriteLine("Connection accepted.");
+            Console.WriteLine("Generating keys....");
+            // generate parameters p an g
+            var p = GenerateLargePrimeNumber();
+            var g = GenerateLargePrimeNumber();
+            Debug.Assert(p.GetByteCount(true) <= 256/8);
+            
+            SendBigInteger(handler, p);
+            SendBigInteger(handler, g);
+            
+            Console.WriteLine("p is");
+            Console.WriteLine(p.ToString());
                 
-                Console.WriteLine("Waiting for a connection...");
-                var handler = listener.Accept();
-                Console.WriteLine("Connection accepted.");
-                Console.WriteLine("Generating keys....");
-                // generate parameters p an g
-                var p = GenerateLargePrimeNumber();
-                var g = GenerateLargePrimeNumber();
-                Debug.Assert(p.GetByteCount(true) <= 256/8);
-                
-                SendBigInteger(handler, p);
-                SendBigInteger(handler, g);
-                
-                Console.WriteLine("p is");
-                Console.WriteLine(p.ToString());
-                    
-                Console.WriteLine("g is");
-                Console.WriteLine(g.ToString());
+            Console.WriteLine("g is");
+            Console.WriteLine(g.ToString());
 
-                var mySecretKey = GenerateRandomNumber();
-                // A = g^a mod p
-                var myOpenKey = BigInteger.ModPow(g, mySecretKey, p);
-                
-                // send my open key to client
-                SendBigInteger(handler, myOpenKey);
-                var otherOpenKey = ReceiveBigInteger(handler);
-                var commonSecretKey = BigInteger.ModPow(otherOpenKey, mySecretKey, p);
-                
-                Console.WriteLine("My open key:");
-                Console.WriteLine(myOpenKey.ToString());
-                Console.WriteLine("My secret key:");
-                Console.WriteLine(mySecretKey.ToString());
-                Console.WriteLine("Common secret key:");
-                Console.WriteLine(commonSecretKey.ToString());
-                var secretKeyBytes = GetKeyBytes(commonSecretKey); 
-                EncryptAndSendFile(handler, filePath, secretKeyBytes);
-                CalculateAndSendSignature(handler);
-                
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-
-//            }
-//            catch (Exception e) {
-//                Console.WriteLine(e);
-//            }
+            var mySecretKey = GenerateRandomNumber();
+            // A = g^a mod p
+            var myOpenKey = BigInteger.ModPow(g, mySecretKey, p);
+            
+            // send my open key to client
+            SendBigInteger(handler, myOpenKey);
+            var otherOpenKey = ReceiveBigInteger(handler);
+            var commonSecretKey = BigInteger.ModPow(otherOpenKey, mySecretKey, p);
+            
+            Console.WriteLine("My open key:");
+            Console.WriteLine(myOpenKey.ToString());
+            Console.WriteLine("My secret key:");
+            Console.WriteLine(mySecretKey.ToString());
+            Console.WriteLine("Common secret key:");
+            Console.WriteLine(commonSecretKey.ToString());
+            var secretKeyBytes = GetKeyBytes(commonSecretKey); 
+            EncryptAndSendFile(handler, filePath, secretKeyBytes);
+            CalculateAndSendSignature(handler);
+            
+            handler.Shutdown(SocketShutdown.Both);
+            handler.Close();
         }
         
         // get file path from args
@@ -96,7 +90,7 @@ namespace DigitalSignature {
                             while ((b = reader.ReadByte()) != -1) {
                                 var realB = new byte[1];
                                 realB[0] = BitConverter.GetBytes(b)[0];
-                                csEncrypt.Write(realB);
+                                csEncrypt.WriteByte(realB[0]);
                             }
                         }
                     }
@@ -147,8 +141,6 @@ namespace DigitalSignature {
             SendBigInteger(handler, p);
             SendBigInteger(handler, a);
             SendBigInteger(handler, b);
-            
-
         }
     }
 }
